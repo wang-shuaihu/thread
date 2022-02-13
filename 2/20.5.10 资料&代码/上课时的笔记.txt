@@ -1,0 +1,79 @@
+this 对象锁
+syn method
+
+当前类.class 锁
+static syn method 
+
+
+syn 你不需要管，内部全部实现了，灵活很差，自由？
+
+lock 
+ReentrantLock 重入锁🔒
+
+---
+0.synchronized如果没有实现可重入，会自己把自己锁死（可重入锁==可重复进入的锁）
+1.synchronized是不能中断的
+2.synchronized没法尝试等10秒后 再去拿下锁
+....
+
+非公平锁 Lock lock = new ReentrantLock();
+synchronized == 非公平锁  天生也是 == 非公平锁
+
+非公平锁 和 公平锁，那个效率高？
+非公平锁
+
+公平锁 Lock lock = new ReentrantLock(true);
+
+开源框架，大部分都是 notifyALl，为什么，要保证全部唤醒，开源框架  wait的比较多，无法明确唤醒哪一个
+
+我们这里比较简单，非常明确，等待的 一定是 消费者  就使用了notify
+
+网上很多开发者 说 notify 是没什么用的
+
+----
+wait 或者 notify  为什么需要 syn 包裹，否则报错？
+
+
+wait 和 notify == this 对象 
+
+wait 等待区域：
+内部
+1.获取对象锁
+2.检测条件等等 内部逻辑
+syn(this)  已经被锁住了，notify还怎么获取，是不是很矛盾？
+	wait();  wait后，持有的this🔒，会被释放
+
+
+notify 通知区域：
+1.获取对象锁
+syn(this)
+	notify 或者 notifyAll
+
+
+------
+儿时的游戏：（等待 与 唤醒） 
+　　有一群小朋友一起玩一个游戏，这个游戏可能大家都玩过，大家一起划拳，划拳输得最惨的那个小朋友去抓人(这个小朋友取名为 CPU)，被抓的很多人取名为线程，有很多线程，如果其中一个小朋友(例如:Thread-3) 被木头了(wait();)  就站着不准动了(冻结状态)，Thread-3小朋友站着不动(冻结状态) CPU小朋友就不会去抓Thread-3小朋友，因为Thread-3小朋友(释放CPU执行资格)   需要其他小朋友(例如:Thread-5) 去啪一下Thread-3小朋友(notify();),  此时Thread-3小朋友就可以跑了(被唤醒) 此时Thread-3小朋友具备被抓的资格(具备CPU执行资格)，能否被抓得到 要看CPU小朋友的随机抓人法（CPU切换线程的随机性）
+
+等待唤醒机制： 
+　　 wait(); 等待/冻结 ：可以将线程冻结，释放CPU执行资格，释放CPU执行权，并把此线程临时存储到线程池
+
+ 　　notify(); 唤醒线程池里面 任意一个线程，没有顺序；
+　　 notifyAll(); 唤醒线程池里面，全部的线程；
+ 
+
+使用等待唤醒注意事项：
+　　1.使用来wait();冻结，就必须要被其他方notify();，否则一直wait()冻结，所以等待与唤醒是配合一起使用的；
+　　2.wait();  notify();  notifyAll(); 等方法必须被synchronized(锁) {包裹起来}，意思就是：wait();  notify();  notifyAll();  必须要有同步锁🔒，否则毫无意义；
+ 　  3.wait();  notify();  notifyAll(); 等方法必须持有同一把锁🔒，因为：lockA.wait();  只能使用 lockA.notify(); / lockA.notifyAll(); , 它们是使用同一把锁🔒的；
+ 
+等待：🔒锁.wait();
+唤醒：🔒锁.notify();
+唤醒：🔒锁.notifyAll();
+------
+
+自定义写了一个锁，一般情况下，是不可重入，递归 测试会发现 自己会把自己锁死
+
+
+
+
+
